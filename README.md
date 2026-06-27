@@ -16,6 +16,8 @@ Write a post once, choose the platforms, and publish without manually copying th
 
 - TanStack Start
 - TypeScript
+- React
+- Tailwind CSS
 
 ## Status
 
