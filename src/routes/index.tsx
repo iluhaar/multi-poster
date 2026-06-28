@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
 import { PlatformSelector } from '../components/platform-selector'
 import { PostComposer } from '../components/post-composer'
+import { publishPost } from '../lib/providers'
 import { platforms, type PlatformId } from '../lib/platforms'
 
 const platformSelectionCookieName = 'multi-poster-platform-selection'
@@ -69,6 +70,9 @@ function Home() {
   const selectedPlatformNames = platforms
     .filter((platform) => selectedPlatforms[platform.id])
     .map((platform) => platform.name)
+  const selectedPlatformIds = platforms
+    .filter((platform) => selectedPlatforms[platform.id])
+    .map((platform) => platform.id)
 
   const hasPostText = postText.trim().length > 0
   const hasLimitError = platforms.some(
@@ -94,11 +98,27 @@ function Home() {
     })
   }
 
-  function handlePublish() {
+  async function handlePublish() {
     if (!canPublish) return
 
+    const results = await publishPost(selectedPlatformIds, { text: postText })
+    const successfulResults = results.filter((result) => result.ok)
+    const failedResults = results.filter((result) => !result.ok)
+
+    if (failedResults.length === 0) {
+      setPublishMessage(
+        `Publish flow completed for ${selectedPlatformNames.join(', ')}.`,
+      )
+      return
+    }
+
+    if (successfulResults.length === 0) {
+      setPublishMessage('Publish flow failed for every selected platform.')
+      return
+    }
+
     setPublishMessage(
-      `Mock publish ready for ${selectedPlatformNames.join(', ')}.`,
+      `Partial publish: ${successfulResults.length} succeeded, ${failedResults.length} failed.`,
     )
   }
 
